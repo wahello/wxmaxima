@@ -31,7 +31,8 @@ wxmaxima_SOURCES = \
 	FracCell.cpp       FracCell.h       \
 	SqrtCell.cpp       SqrtCell.h       \
 	MatrCell.cpp       MatrCell.h       \
-	MathCell.cpp       MathCell.h       \
+	Cell.cpp           Cell.h           \
+	CellList.cpp       CellList.h       \
 	SubCell.cpp        SubCell.h        \
 	IntCell.cpp        IntCell.h        \
 	TextCell.cpp       TextCell.h       \

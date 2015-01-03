@@ -56,7 +56,7 @@ void FracCell::SetParent(MathCell *parent, bool all)
   MathCell::SetParent(parent, all);
 }
 
-MathCell* FracCell::Copy(bool all)
+MathCell* FracCell::Copy()
 {
   FracCell* tmp = new FracCell;
   CopyData(this, tmp);
@@ -66,9 +66,6 @@ MathCell* FracCell::Copy(bool all)
   tmp->m_exponent = m_exponent;
   tmp->SetupBreakUps();
 
-  if (all)
-    tmp->CopyRestFrom(this);
-  
   return tmp;
 }
 

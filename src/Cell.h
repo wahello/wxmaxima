@@ -22,8 +22,8 @@
   The definition of the base class of all cells.
  */
 
-#ifndef MATHCELL_H
-#define MATHCELL_H
+#ifndef CELL_H
+#define CELL_H
 
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
 #define MIN(a,b) ((a)>(b) ? (b) : (a))
@@ -73,13 +73,6 @@ enum {
 /*!
   The base class all cell types are derived from
 
-  Every MathCell is part of a double-linked lists: A MathCell does have 
-  a member that points to the previous item (or contains a NULL for the head node 
-  of the list) and a member that points to the next cell (or contains a NULL if 
-  this is the end node of a list).
-  Also every list of MathCells can be a branch of a tree since every math cell contains
-  a pointer to its parent group cell.
-
   Besides the cell types that are directly user visible there are cells for several
   kinds of items that are displayed in a special way like abs() statements (displayed
   as horizontal rules), subscripts, superscripts and exponents.
@@ -94,38 +87,18 @@ enum {
   \attention Derived classes must test if m_next equals NULL and if it doesn't
   they have to delete() it.
  */
-class MathCell
+class Cell
 {
 public:
-  MathCell();
-  virtual ~MathCell();
-  /*! Copy this cell (and, if requested, all following cells)
-    
-    \param all 
-     - true:  Copy this and all the following cells
-     - false: Copy this cell only
+  Cell();
+  virtual ~Cell();
+  /*! Copy this object
 
-    \return A copy of this cell with (if the parameter all was true) all 
+    \return A copy of this object with (if the parameter all was true) all 
     following cells attached.
    */
-  virtual MathCell* Copy(bool all) = 0;
+  virtual Cell* Copy() = 0;
   
-  /*! Free all memory directly referenced by the contents of this cell
-
-    This command (and the celltype-specific versions of the derived
-    classes) are internally used by the DestroyTree() functions that
-    free the complete list of cells.
-    \attention This function Doesn't free the other cells of the list
-    that is started by this cell.
-   */
-  virtual void Destroy() = 0;
-
-  /*! Add a cell to the end of the list this cell is part of
-    
-    \param p_next The cell that will be appended to the list.
-   */
-  void AppendCell(MathCell *p_next);
-
   //! Do we want this cell to start with a linebreak?
   void BreakLine(bool breakLine) { m_breakLine = breakLine; }
   //! Do we want this cell to start with a pagebreak?
@@ -137,34 +110,29 @@ public:
   //! Does this cell begin begin with a manual page break?  
   bool BreakPageHere() { return m_breakPage; }
   virtual bool BreakUp() { return false; }
-  /*! Is a part of this cell inside a certain rectangle?
+  /*! Is a part of this object inside a certain rectangle?
 
-    \param big The rectangle to test for collision with this cell
-    \param all
-     - true means test this cell and the ones that are following it in the list
-     - false means test this cell only.
+    \param big The rectangle to test for collision with this object
    */
-  bool ContainsRect(wxRect& big, bool all = true);
-  /*! Is a given point inside this cell?
+  bool ContainsRect(wxRect& big);
+  /*! Is a given point inside this object?
 
-    \param point The point to test for collision with this cell
+    \param point The point to test for collision with this object
    */
   bool ContainsPoint(wxPoint& point)
   {
     return GetRect().Contains(point);
   }
-  void CopyData(MathCell *s, MathCell *t);
+  void CopyData(Cell *s, Cell *t);
 
-  /*! Draw this cells (and optionally the following cells)
+  /*! Draw this object
 
-    \param point The x and y position this cell is drawn at
+    \param point The x and y position this object is drawn at
     \param fontsize The font size that is to be used
-    \param all
-     - true: the whole list of cells has to be drawn starting with this one
-     - false: only this cell has to be drawn
    */
-  virtual void Draw(CellParser& parser, wxPoint point, int fontsize, bool all);
-  void DrawBoundingBox(wxDC& dc, bool all = false, int border = 0);
+  virtual void Draw(CellParser& parser, wxPoint point, int fontsize)=0;
+  //! Draws a box around this object.
+  virtual void DrawBoundingBox(wxDC& dc, int border = 0);
   bool DrawThisCell(CellParser& parser, wxPoint point);
 
   /*! Insert (or remove) a forced linebreak at the beginning of this cell.
@@ -175,6 +143,10 @@ public:
    */
   void ForceBreakLine(bool force) { m_forceBreakLine = m_breakLine = force; }
 
+  //! Invalidate the cached size information.
+  virtual void InvalidateSizeInformation();
+
+  
   //! Get the total height of this cell
   int GetHeight() { return m_height; }
   //! Get the width of this cell
@@ -197,27 +169,32 @@ public:
     Returns the type of this cell.
    */
   int GetType() { return m_type; }
-  int GetMaxDrop();
+  /*! Get the maximum difference between the center and the top of this line
+
+    \todo This piece of code is still recursive.
+    \todo Move to CellList?
+  */
   int GetMaxCenter();
+  int GetMaxDrop();
+  /*! Get the maximum distance between center and 
+
+    \todo Still containing recursive code that is risking exceeding the platform's
+    current stack limit.
+    \todo Move to CellList?
+   */
   int GetMaxHeight();
-  int GetFullWidth(double scale);
-  int GetLineWidth(double scale);
   //! Get the x position of the top left of this cell
   int GetCurrentX() { return m_currentPoint.x; }
   //! Get the y position of the top left of this cell
   int GetCurrentY() { return m_currentPoint.y; }
-  /*! Get the smallest rectangle this cell fits in
-
-    \param all
-      - true: Get the rectangle for this cell and the ones that follow it in the list of cells
-      - false: Get the rectangle for this cell only.
+  /*! Get the smallest rectangle this object fits in
    */
-  virtual wxRect GetRect(bool all = false);
+  virtual wxRect GetRect();
   virtual wxString GetDiffPart();
-  //! Recalculate the height of the cell and the difference between top and center
-  virtual void RecalculateSize(CellParser& parser, int fontsize, bool all);
-  //! Marks all widths as to be recalculated on query.
-  virtual void RecalculateWidths(CellParser& parser, int fontsize, bool all);
+  //! Recalculate the height of the object and the difference between top and center
+  virtual void RecalculateSize(CellParser& parser, int fontsize)=0;
+  //! Marks the width as to be recalculated on query.
+  virtual void RecalculateWidths(CellParser& parser, int fontsize);
   void ResetData();
   void ResetSize() { m_width = m_height = -1; }
 
@@ -231,63 +208,37 @@ public:
   virtual void SetValue(wxString text) { }
   virtual wxString GetValue() { return wxEmptyString; }
 
-  void SelectRect(wxRect& rect, MathCell** first, MathCell** last);
-  void SelectFirst(wxRect& rect, MathCell** first);
-  void SelectLast(wxRect& rect, MathCell** last);
+  void SelectRect(wxRect& rect, Cell** first, Cell** last);
+  void SelectFirst(wxRect& rect, Cell** first);
+  void SelectLast(wxRect& rect, Cell** last);
   /*! Select a rectangle that is created by a cell inside this cell.
 
     \attention This method has to be overridden by children of the 
-    MathCell class.
+    Cell class.
   */
-  virtual void SelectInner(wxRect& rect, MathCell** first, MathCell** last);
+  virtual void SelectInner(wxRect& rect, Cell** first, Cell** last);
 
   virtual bool IsOperator();
-  bool IsCompound();
   virtual bool IsShortNum() { return false; }
 
-  MathCell* GetParent();
+  Cell* GetParent();
 
-  /*! Returns the cell's representation as a string.
-
-    \param all
-     - true  convert the whole list of cells starting with this one
-     - false convert only this cell.
-   */
-  virtual wxString ToString(bool all);
-  /*! Convert this cell to its LaTeX representation
-
-    \param all
-     - true  convert the whole list of cells starting with this one
-     - false convert only this cell.
-   */
-  virtual wxString ToTeX(bool all);
-  /*! Convert this cell to an representation fit for saving in a .wxmx file
-
-    \param all
-     - true  convert the whole list of cells starting with this one
-     - false convert only this cell.
-   */
-  virtual wxString ToXML(bool all);
+  //! Returns the object's representation as a string.
+  virtual wxString ToString()=0;
+  //! Convert this cell to its LaTeX representation
+  virtual wxString ToTeX()=0;
+  //! Convert this cell to an representation fit for saving in a .wxmx file
+  virtual wxString ToXML()=0;
 
   void UnsetPen(CellParser& parser);
-  virtual void Unbreak(bool all);
+  virtual void Unbreak();
 
-  /*! The next cell in the list of cells
-
-    Reads NULL, if this is the last cell of the list.
-   */
-  MathCell *m_next;
-  /*! The previous cell in the list of cells
-    
-    Reads NULL, if this is the first cell of the list.    
-   */
-  MathCell *m_previous;
   /*! The group cell this list of cells belongs to.
     
     Reads NULL, if no parent cell has been set.    
    */
-  MathCell *m_group;
-  MathCell *m_nextToDraw, *m_previousToDraw;
+  Cell *m_group;
+  Cell *m_nextToDraw, *m_previousToDraw;
   wxPoint m_currentPoint;  // Current point in console (the center of the cell)
   bool m_bigSkip;
   //! true means: Add a linebreak to the end of this cell.
@@ -302,57 +253,43 @@ public:
     return m_type == MC_TYPE_TEXT || m_type == MC_TYPE_SECTION ||
            m_type == MC_TYPE_SUBSECTION || m_type == MC_TYPE_TITLE;
   }
-  bool IsEditable(bool input = false)
-  {
-    return (m_type == MC_TYPE_INPUT  &&
-            m_previous != NULL && m_previous->m_type == MC_TYPE_MAIN_PROMPT)
-         || (!input && IsComment());
-  }
-  virtual void ProcessEvent(wxKeyEvent& event) { }
+
+  virtual void ProcessEvent(wxKeyEvent& event)=0;
   virtual bool ActivateCell() { return false; }
   virtual bool AddEnding() { return false; }
-  virtual void SelectPointText(wxDC &dc, wxPoint& point) { }
-  virtual void SelectRectText(wxDC &dc, wxPoint& one, wxPoint& two) { }
-  virtual void PasteFromClipboard(bool primary = false) { }
+  virtual void SelectPointText(wxDC &dc, wxPoint& point)=0;
+  virtual void SelectRectText(wxDC &dc, wxPoint& one, wxPoint& two)=0;
+  virtual void PasteFromClipboard(bool primary = false)=0;
   virtual bool CopyToClipboard() { return false; }
   virtual bool CutToClipboard() { return false; }
-  virtual void SelectAll() { }
+  virtual void SelectAll() = 0;
   virtual bool CanCopy() { return false; }
-  virtual void SetMatchParens(bool match) { }
+  virtual void SetMatchParens(bool match)=0;
   virtual wxPoint PositionToPoint(CellParser& parser, int pos = -1) { return wxPoint(-1, -1); }
   virtual bool IsDirty() { return false; }
-  virtual void SwitchCaretDisplay() { }
-  virtual void SetFocus(bool focus) { }
+  virtual void SwitchCaretDisplay()=0;
+  virtual void SetFocus(bool focus)=0;
   void SetForeground(CellParser& parser);
   virtual bool IsActive() { return false; }
-  virtual void SetParent(MathCell *parent, bool all);
+  virtual void SetParent(Cell *parent);
   void SetStyle(int style) { m_textStyle = style; }
   bool IsMath();
   void SetAltCopyText(wxString text) { m_altCopyText = text; }
 protected:
   /*! Attach a copy of the list of cells that follows this one to a cell
-    
-    Used by MathCell::Copy() when the parameter <code>all</code> is true.
   */
-  MathCell* CopyRestFrom(MathCell *src);
+  Cell* CopyRestFrom(Cell *src);
   
   //! The height of this cell
   int m_height;
   //! The width of this cell
   int m_width;
-  /*! Caches the width of the list starting with this cell.
-
-    - Will contain -1, if it has not yet been calculated.
-    - Won't be recalculated on appending new cells to the list.
-  */
-  int m_fullWidth;
-  /*! Caches the width of the rest of the line this cell is part of.
-
-    - Will contain -1, if it has not yet been calculated.
-    - Won't be recalculated on appending new cells to the list.
-  */  
-  int m_lineWidth;
   int m_center;
+  /*! Caches the maximum difference between the center and the top of this line
+
+    Can be queried by GetMaxCenter(); The value -1 means that this information 
+    still needs to be calculated.
+   */
   int m_maxCenter;
   int m_maxDrop;
   int m_type;
@@ -367,4 +304,4 @@ protected:
   wxString m_altCopyText; // m_altCopyText is not check in all cells!
 };
 
-#endif // MATHCELL_H
+#endif // CELL_H
