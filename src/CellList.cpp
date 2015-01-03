@@ -52,16 +52,22 @@ int CellList::GetMaxCenter(Cell *LineStart)
     // backwards from there.
     while(tmp->m_NextToDraw)tmp=tmp->m_NextToDraw;
 
+    // Now we iterate backwards through the list
     while (tmp!=NULL)
       {
+	// Determine if we got a new maximum center value
 	if(max_Center>tmp->GetCenter())
 	  max_Center=tmp->GetCenter();
 
+	// Save the value in the cell
 	tmp->m_maxCenter=max_Center;
 
+	// If this cell begins with a linebreak the maximum center value calculation
+	// restarts with 0 for the previous cell
 	if(tmp->m_isBroken)
 	  max_Center=0;
-	  
+
+	// Go to the element that is drawn prior to this one.
 	tmp=tmp->m_previousToDraw;
       }
   }
