@@ -12,10 +12,14 @@ void CellList::AppendCell(Cell *p_next)
   // We want to app end something. Therefore the size information has to
   // be recalculated.
   ResetData();
+
+  Cell *tmp=end();
   
   if(!empty())
     (*end())->m_nextToDraw=p_next;
   push_back(p_next);
+  
+  p_next->m_previousToDraw=tmp;
 };
 
 int CellList::GetFullWidth(double scale)
@@ -34,22 +38,34 @@ int CellList::GetFullWidth(double scale)
   return m_fullWidth;
 }
 
-int CellList::GetMaxCenter()
+int CellList::GetMaxCenter(Cell *LineStart)
 {
   // -1 means we need to recalculate this value.
-  if (m_maxCenter == -1)
+  if (LineStart->m_maxCenter == -1)
   {
+    //    for (std::list<int>::reverse_iterator i = s.rbegin(); i != s.rend(); ++i)
+      
     Cell *tmp=front();
+    int max_Center=0;
+    
+    // Find the last element in the order they will be drawn so we can iterate
+    // backwards from there.
+    while(tmp->m_NextToDraw)tmp=tmp->m_NextToDraw;
 
-    do
+    while (tmp!=NULL)
       {
-	if(m_maxCenter>tmp->GetCenter())
-	  m_maxCenter=tmp->GetCenter();
-	
-	tmp=tmp->m_nextToDraw;
-      } while ((tmp!=NULL)&&(!tmp->m_isBroken))
+	if(max_Center>tmp->GetCenter())
+	  max_Center=tmp->GetCenter();
+
+	tmp->m_maxCenter=max_Center;
+
+	if(tmp->m_isBroken)
+	  max_Center=0;
+	  
+	tmp=tmp->m_previousToDraw;
+      }
   }
-  return m_maxCenter;
+  return LineStart->m_maxCenter;
 }
 
 int CellList::GetMaxDrop()
@@ -108,13 +124,13 @@ bool CellList::IsEditable(Cell *SelectionStart)
   // If there is no cell before this one we can already return.
 
   if(SelectionStart==front()) return false;
-  
-  Cell *CellInFrontOfSelection=SelectionStart;
+
+  iterator CellInFrontOfSelection=SelectionStart;
   CellInFrontOfSelection--;
     
   if (
       (SelectionStart->GetType() == MC_TYPE_INPUT)  &&
-      (CellInFrontOfSelection->GetType() == MC_TYPE_MAIN_PROMPT)
+      ((*CellInFrontOfSelection)->GetType() == MC_TYPE_MAIN_PROMPT)
       )
     return true;
   else
