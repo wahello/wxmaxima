@@ -155,34 +155,21 @@ public:
   int GetCenter() { return m_center; }
   /*! Get the distance between the center and the bottom of this cell
 
-
     Remember that (for example with double fractions) the center does not have to be in the 
     middle of a cell even if this object is --- by definition --- center-aligned.
    */
   int GetDrop() { return m_height - m_center; }
-
+  
   /*! 
     Returns the type of this cell.
    */
   int GetType() { return m_type; }
-  /*! Get the maximum difference between the center and the top of this line
-
-    \todo This piece of code is still recursive.
-    \todo Move to CellList?
-  */
-  int GetMaxCenter();
-  int GetMaxDrop();
-  /*! Get the maximum distance between center and 
-
-    \todo Still containing recursive code that is risking exceeding the platform's
-    current stack limit.
-    \todo Move to CellList?
-   */
-  int GetMaxHeight();
   //! Get the x position of the top left of this cell
   int GetCurrentX() { return m_currentPoint.x; }
   //! Get the y position of the top left of this cell
   int GetCurrentY() { return m_currentPoint.y; }
+
+  
   /*! Get the smallest rectangle this object fits in
    */
   virtual wxRect GetRect();
@@ -274,18 +261,6 @@ public:
   void SetStyle(int style) { m_textStyle = style; }
   bool IsMath();
   void SetAltCopyText(wxString text) { m_altCopyText = text; }
-  /*! Caches the maximum difference between the center and the top of this line
-
-    Can be queried by GetMaxCenter(); The value -1 means that this information 
-    still needs to be calculated.
-   */
-  int m_maxCenter;
-  /*! Caches the maximum difference between the center and the bottom of this line
-
-    Can be queried by GetMaxDrop(); The value -1 means that this information 
-    still needs to be calculated.
-   */
-  int m_maxDrop;
 protected:
   /*! Attach a copy of the list of cells that follows this one to a cell
   */

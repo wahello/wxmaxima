@@ -3,6 +3,8 @@ CellList::CellList()
 {
   m_fullWidth = -1;
   m_lineWidth = -1;
+  m_maxDrop   = -1;
+  m_maxCenter = -1;
 }
 
 void CellList::AppendCell(Cell *p_next)
@@ -39,103 +41,63 @@ int CellList::GetFullWidth(double scale)
   return m_fullWidth;
 }
 
-int CellList::GetMaxCenter(Cell *LineStart)
+int CellList::GetMaxDrop()
 {
   // -1 means we need to recalculate this value.
-  if (LineStart->m_maxCenter == -1)
-  {
+  if (m_maxDrop == -1)
+    {
+      iterator i=begin();
+
+      Cell *tmp=*i;
+
+      // If there is nothing in the first line of this cell the cell doesn't extend vertically.
+      m_maxDrop=0;
       
-    Cell *tmp=front();
-    int max_Center=0;
-    
-    // Find the last element in the order they will be drawn so we can iterate
-    // backwards from there.
-    while(tmp->m_nextToDraw)tmp=tmp->m_nextToDraw;
+      while(tmp!=NULL)
+	{
+	  // If this cell begins with a linebreak we 
+	  if(tmp->m_isBroken)
+	    break;
 
-    // Now we iterate backwards through the list
-    // Normally this should look like the following:
-    //    for (std::list<int>::reverse_iterator i = s.rbegin(); i != s.rend(); ++i)
-    // But this time we have to iterate by hand: It might happen that we draw
-    // things in a different order than specified by in the list.
-    while (tmp!=NULL)
-      {
-	// Determine if we got a new maximum center value
-	if(max_Center>tmp->GetCenter())
-	  max_Center=tmp->GetCenter();
-
-	// Save the value in the cell
-	tmp->m_maxCenter=max_Center;
-
-	// If this cell begins with a linebreak the maximum center value calculation
-	// restarts with 0 for the previous cell
-	if(tmp->m_isBroken)
-	  max_Center=0;
-
-	// If I didn't get something wrong the old code was able to add
-	// inconsistencies here. So we better check...
-	if(tmp->m_previousToDraw)
-	  wxASSERT_MSG(
-		       tmp==(tmp->m_previousToDraw)->m_nextToDraw,
-		       "m_previousToDraw and m_nextToDraw are inconsistent"
-		       );
-
-	// Go to the element that is drawn prior to this one.
-	tmp=tmp->m_previousToDraw;
-      }
-  }
-  return LineStart->m_maxCenter;
+	  if(tmp->GetDrop()>m_maxDrop)
+	    m_maxDrop>tmp->GetDrop();
+	  
+	  tmp=tmp->m_nextToDraw;
+	}
+    }
+  return m_maxDrop;
 }
 
-int CellList::GetMaxDrop(Cell *LineStart)
+int CellList::GetMaxCenter()
 {
   // -1 means we need to recalculate this value.
-  if (LineStart->m_maxDrop == -1)
-  {
+  if (m_maxCenter == -1)
+    {
+      iterator i=begin();
+
+      Cell *tmp=*i;
+
+      // If there is nothing in the first line of this cell the cell doesn't extend vertically.
+      m_maxCenter=0;
       
-    Cell *tmp=front();
-    int max_Drop=0;
-    
-    // Find the last element in the order they will be drawn so we can iterate
-    // backwards from there.
-    while(tmp->m_nextToDraw)tmp=tmp->m_nextToDraw;
+      while(tmp!=NULL)
+	{
+	  // If this cell begins with a linebreak we 
+	  if(tmp->m_isBroken)
+	    break;
 
-    // Now we iterate backwards through the list
-    // Normally this should look like the following:
-    //    for (std::list<int>::reverse_iterator i = s.rbegin(); i != s.rend(); ++i)
-    // But this time we have to iterate by hand: It might happen that we draw
-    // things in a different order than specified by in the list.
-    while (tmp!=NULL)
-      {
-	// Determine if we got a new maximum center value
-	if(max_Drop>tmp->GetDrop())
-	  max_Drop=tmp->GetDrop();
-
-	// Save the value in the cell
-	tmp->m_maxDrop=max_Drop;
-
-	// If this cell begins with a linebreak the maximum center value calculation
-	// restarts with 0 for the previous cell
-	if(tmp->m_isBroken)
-	  max_Drop=0;
-
-	// If I didn't get something wrong the old code was able to add
-	// inconsistencies here. So we better check...	
-	if(tmp->m_previousToDraw)
-	  wxASSERT_MSG(
-		       tmp==(tmp->m_previousToDraw)->m_nextToDraw,
-		       "m_previousToDraw and m_nextToDraw are inconsistent"
-		       );
-	
-	// Go to the element that is drawn prior to this one.
-	tmp=tmp->m_previousToDraw;
-      }
-  }
-  return LineStart->m_maxDrop;
+	  if(tmp->GetCenter()>m_maxCenter)
+	    m_maxCenter>tmp->GetCenter();
+	  
+	  tmp=tmp->m_nextToDraw;
+	}
+    }
+  return m_maxCenter;
 }
 
-int CellList::GetMaxHeight(Cell *LineStart)
+int CellList::GetMaxHeight()
 {
-  return GetMaxCenter(LineStart) + GetMaxDrop(LineStart);
+  return GetMaxCenter() + GetMaxDrop();
 }
 
 int CellList::GetLineWidth(double scale)
@@ -210,6 +172,9 @@ void CellList::ResetData()
 { 
   m_fullWidth = -1;
   m_lineWidth = -1;
+  m_maxCenter = -1;
+  m_maxDrop = -1;
+
   for(iterator i=begin();i!=end();i++)
     (*i)->ResetData();
 
@@ -246,9 +211,9 @@ wxRect CellList::GetRect()
   Cell *LineBegin=front();
   return wxRect(
 		LineBegin->m_currentPoint.x,
-		LineBegin->m_currentPoint.y - LineBegin->GetMaxCenter(),
+		LineBegin->m_currentPoint.y - GetMaxCenter(),
 		GetLineWidth(1.0),
-		LineBegin->GetMaxHeight());
+		GetMaxHeight());
 }
 
 CellList* CellList::Copy()

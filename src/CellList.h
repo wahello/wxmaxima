@@ -24,12 +24,12 @@ public:
    */
   CellList::iterator ListElement(Cell *cell);
 
-  //! Get the distance between the top and the center of the line.
-  int GetMaxCenter(Cell *LineStart);
-  //! Get the distance between the bottom and the center of the line.
-  int GetMaxDrop(Cell *LineStart);
-  //!  Get the maximum hight of cells in line.
-  int GetMaxHeight(Cell *LineStart);
+  //! Get the distance between the top and the center of the first line of this list.
+  int GetMaxCenter();
+  //! Get the distance between the bottom and the center of the first line of this list.
+  int GetMaxDrop();
+  //!  Get the maximum hight of the cells in the first line of this list.
+  int GetMaxHeight();
 
   /*! Get the width this list of cells would have if there weren't any linebreaks.
     
@@ -40,7 +40,7 @@ public:
   /*! Get the width of the bounding box occupied by this list of cells.
    */
   int GetLineWidth(double scale);
-  
+
   virtual wxString ToString();
   virtual wxString ToTeX();
   virtual wxString ToXML();
@@ -107,5 +107,17 @@ public:
     - Won't be recalculated on appending new cells to the list.
   */
   int m_fullWidth;
+  /*! Caches the maximum difference between the center and the top of this line
+
+    Can be queried by GetMaxCenter(); The value -1 means that this information 
+    still needs to be calculated.
+   */
+  int m_maxCenter;
+  /*! Caches the maximum difference between the center and the bottom of this line
+
+    Can be queried by GetMaxDrop(); The value -1 means that this information 
+    still needs to be calculated.
+   */
+  int m_maxDrop;
 };
 

@@ -24,8 +24,6 @@ Cell::Cell()
   m_nextToDraw = NULL;
   m_previousToDraw = NULL;
   m_group = NULL;
-  m_maxCenter = -1;
-  m_maxDrop = -1;
   m_width = -1;
   m_height = -1;
   m_center = -1;
@@ -105,7 +103,7 @@ bool Cell::DrawThisCell(CellParser& parser, wxPoint point)
   int bottom = parser.GetBottom();
   if (top == -1 || bottom == -1)
     return true;
-  if (point.y - GetMaxCenter() > bottom || point.y + GetMaxDrop() < top)
+  if (point.y - GetCenter() > bottom || point.y + GetDrop() < top)
     return false;
   return true;
 }
@@ -169,8 +167,6 @@ bool Cell::ContainsRect(wxRect& sm)
  */
 void Cell::ResetData()
 {
-  m_maxCenter = -1;
-  m_maxDrop = -1;
 //  m_currentPoint.x = -1;
 //  m_currentPoint.y = -1;
   m_breakLine = m_forceBreakLine;
