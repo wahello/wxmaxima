@@ -143,23 +143,6 @@ wxString Cell::GetDiffPart()
   return wxEmptyString;
 }
 
-/***
- * Find the first and last cell in rectangle rect in this line.
- */
-void Cell::SelectRect(wxRect& rect, Cell** first, Cell** last)
-{
-  SelectFirst(rect, first);
-  if (*first != NULL)
-  {
-    *last = *first;
-    (*first)->SelectLast(rect, last);
-    if (*last == *first)
-      (*first)->SelectInner(rect, first, last);
-  }
-  else
-    *last = NULL;
-}
-
 bool Cell::BreakLineHere()
 {
   return (!m_isBroken && (m_breakLine || m_forceBreakLine));
@@ -279,8 +262,7 @@ bool Cell::IsMath()
            m_textStyle == TS_INPUT);
 }
 
-
-void Cell::SelectInner(wxRect& rect, MathCell** first, MathCell** last)
+void Cell::SelectInner(wxRect& rect, Cell** first, Cell** last)
 {
   *first = this;
   *last = this;

@@ -89,6 +89,10 @@ public:
  */
   Cell *SelectLast(wxRect& rect);
 
+  /*! Find the first and last cell in rectangle rect in this line.
+   */
+  void SelectRect(wxRect& rect, Cell** first, Cell** last);
+
  private:
   /*! Caches the width of the bounding box occupied by this list of cells.
 
@@ -104,3 +108,4 @@ public:
   */
   int m_fullWidth;
 };
+

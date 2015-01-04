@@ -20,30 +20,30 @@
 #ifndef SUBSUPCELL_H
 #define SUBSUPCELL_H
 
-#include "MathCell.h"
+#include "CellList.h"
 
-class SubSupCell : public MathCell
+class SubSupCell : public Cell
 {
 public:
   SubSupCell();
   ~SubSupCell();
-  MathCell* Copy(bool all);
+  Cell* Copy();
   void Destroy();
-  void SetBase(MathCell *base);
-  void SetIndex(MathCell *index);
-  void SetExponent(MathCell *expt);
-  void RecalculateSize(CellParser& parser, int fontsize, bool all);
-  void RecalculateWidths(CellParser& parser, int fontsize, bool all);
-  void Draw(CellParser& parser, wxPoint point, int fontsize, bool all);
-  wxString ToString(bool all);
-  wxString ToTeX(bool all);
-  wxString ToXML(bool all);
-  void SelectInner(wxRect& rect, MathCell** first, MathCell** last);
-  void SetParent(MathCell *parent, bool all);
+  void SetBase(CellList *base);
+  void SetIndex(CellList *index);
+  void SetExponent(CellList *expt);
+  void RecalculateSize(CellParser& parser, int fontsize);
+  void RecalculateWidths(CellParser& parser, int fontsize);
+  void Draw(CellParser& parser, wxPoint point, int fontsize);
+  wxString ToString();
+  wxString ToTeX();
+  wxString ToXML();
+  void SelectInner(wxRect& rect, Cell** first, Cell** last);
+  void SetParent(Cell *parent);
 protected:
-  MathCell *m_baseCell;
-  MathCell *m_exptCell;
-  MathCell *m_indexCell;
+  CellList *m_baseCell;
+  CellList *m_exptCell;
+  CellList *m_indexCell;
 };
 
 #endif // SUBSUPCELL_H

@@ -265,6 +265,7 @@ public:
   virtual void SetMatchParens(bool match) { };
   virtual wxPoint PositionToPoint(CellParser& parser, int pos = -1) { return wxPoint(-1, -1); }
   virtual bool IsDirty() { return false; }
+
   virtual void SwitchCaretDisplay() { };
   virtual void SetFocus(bool focus) { };
   void SetForeground(CellParser& parser);

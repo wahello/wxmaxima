@@ -381,3 +381,17 @@ Cell *CellList::SelectLast(wxRect& rect)
   else
     return(NULL);
 }
+
+void CellList::SelectRect(wxRect& rect, Cell** first, Cell** last)
+{
+  Cell *Begin=SelectFirst(rect);
+  Cell *End=  SelectLast(rect);
+
+  if((Begin!=NULL)&&(End!=NULL))
+    *first=*last=NULL;
+  else
+    {
+      *first=Begin;
+      *last=End;
+    }
+}
