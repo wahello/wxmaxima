@@ -20,7 +20,7 @@
 #include "TextCell.h"
 #include "Setup.h"
 
-TextCell::TextCell() : MathCell()
+TextCell::TextCell() : Cell()
 {
   m_text = wxEmptyString;
   m_fontSize = -1;
@@ -28,7 +28,7 @@ TextCell::TextCell() : MathCell()
   m_altJs = m_alt = false;
 }
 
-TextCell::TextCell(wxString text) : MathCell()
+TextCell::TextCell(wxString text) : Cell()
 {
   m_text = text;
   m_text.Replace(wxT("\n"), wxEmptyString);
@@ -38,8 +38,6 @@ TextCell::TextCell(wxString text) : MathCell()
 
 TextCell::~TextCell()
 {
-  if (m_next != NULL)
-    delete m_next;
 }
 
 void TextCell::SetValue(wxString text)
@@ -50,7 +48,7 @@ void TextCell::SetValue(wxString text)
   m_alt = m_altJs = false;
 }
 
-MathCell* TextCell::Copy(bool all)
+Cell* TextCell::Copy()
 {
   TextCell *retval = new TextCell(wxEmptyString);
   CopyData(this, retval);
@@ -61,18 +59,10 @@ MathCell* TextCell::Copy(bool all)
   retval->m_textStyle = m_textStyle;
   retval->m_highlight = m_highlight;
 
-  if (all)
-    retval->CopyRestFrom(this);
-
   return retval;
 }
 
-void TextCell::Destroy()
-{
-  m_next = NULL;
-}
-
-void TextCell::RecalculateWidths(CellParser& parser, int fontsize, bool all)
+void TextCell::RecalculateWidths(CellParser& parser, int fontsize)
 {
   SetAltText(parser);
 
@@ -144,21 +134,21 @@ void TextCell::RecalculateWidths(CellParser& parser, int fontsize, bool all)
 
     m_realCenter = m_center = m_height / 2;
   }
-  MathCell::RecalculateWidths(parser, fontsize, all);
+  Cell::RecalculateWidths(parser, fontsize);
 }
 
-void TextCell::RecalculateSize(CellParser& parser, int fontsize, bool all)
+void TextCell::RecalculateSize(CellParser& parser, int fontsize)
 {
-  MathCell::RecalculateSize(parser, fontsize, all);
+  Cell::RecalculateSize(parser, fontsize);
 }
 
-void TextCell::Draw(CellParser& parser, wxPoint point, int fontsize, bool all)
+void TextCell::Draw(CellParser& parser, wxPoint point, int fontsize)
 {
   double scale = parser.GetScale();
   wxDC& dc = parser.GetDC();
 
   if (m_width == -1 || m_height == -1)
-    RecalculateWidths(parser, fontsize, false);
+    RecalculateWidths(parser, fontsize);
 
   if (DrawThisCell(parser, point) && !m_isHidden)
   {
@@ -198,7 +188,7 @@ void TextCell::Draw(CellParser& parser, wxPoint point, int fontsize, bool all)
                   point.x + SCALE_PX(MC_TEXT_PADDING, scale),
                   point.y - m_realCenter + SCALE_PX(MC_TEXT_PADDING, scale));
   }
-  MathCell::Draw(parser, point, fontsize, all);
+  Cell::Draw(parser, point, fontsize);
 }
 
 void TextCell::SetFont(CellParser& parser, int fontsize)
@@ -265,7 +255,7 @@ bool TextCell::IsOperator()
   return false;
 }
 
-wxString TextCell::ToString(bool all)
+wxString TextCell::ToString()
 {
   wxString text;
   if (m_altCopyText != wxEmptyString)
@@ -278,10 +268,10 @@ wxString TextCell::ToString(bool all)
   }
   if (m_textStyle == TS_STRING)
     text = wxT("\"") + text + wxT("\"");
-  return text + MathCell::ToString(all);
+  return text;
 }
 
-wxString TextCell::ToTeX(bool all)
+wxString TextCell::ToTeX()
 {
   wxString text;
   if (m_isHidden)
@@ -354,10 +344,10 @@ wxString TextCell::ToTeX(bool all)
 #endif
   }
 
-  return text + MathCell::ToTeX(all);
+  return text;
 }
 
-wxString TextCell::ToXML(bool all)
+wxString TextCell::ToXML()
 {
   wxString tag;
   if(m_isHidden)tag=_T("h");
@@ -383,7 +373,7 @@ wxString TextCell::ToXML(bool all)
   xmlstring.Replace(wxT("\""), wxT("&quot;"));
 
   return _T("<") + tag + _T(">") + xmlstring + _T("</") + tag + _T(">") +
-    MathCell::ToXML(all);
+    Cell::ToXML();
 }
 
 wxString TextCell::GetDiffPart()
@@ -391,9 +381,14 @@ wxString TextCell::GetDiffPart()
   return wxT(",") + m_text + wxT(",1");
 }
 
+/*! Is this a number with less than 4 digits?
+
+\todo Review: I now test for m_nextToDraw instead for m_next. Is this OK?
+
+ */
 bool TextCell::IsShortNum()
 {
-  if (m_next != NULL)
+  if (m_nextToDraw != NULL)
     return false;
   else if (m_text.Length() < 4)
     return true;

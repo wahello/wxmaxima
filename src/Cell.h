@@ -211,8 +211,10 @@ public:
 
     \attention This method has to be overridden by children of the 
     Cell class.
+    
+    \todo TextCell doesn't do override this method. Is this bad?
   */
-  virtual void SelectInner(wxRect& rect, Cell** first, Cell** last)=0;
+  virtual void SelectInner(wxRect& rect, Cell** first, Cell** last);
 
   virtual bool IsOperator();
   virtual bool IsShortNum() { return false; }
@@ -250,21 +252,21 @@ public:
            m_type == MC_TYPE_SUBSECTION || m_type == MC_TYPE_TITLE;
   }
 
-  virtual void ProcessEvent(wxKeyEvent& event)=0;
+  virtual void ProcessEvent(wxKeyEvent& event) {};
   virtual bool ActivateCell() { return false; }
   virtual bool AddEnding() { return false; }
-  virtual void SelectPointText(wxDC &dc, wxPoint& point)=0;
-  virtual void SelectRectText(wxDC &dc, wxPoint& one, wxPoint& two)=0;
-  virtual void PasteFromClipboard(bool primary = false)=0;
+  virtual void SelectPointText(wxDC &dc, wxPoint& point) { };
+  virtual void SelectRectText(wxDC &dc, wxPoint& one, wxPoint& two) { };
+  virtual void PasteFromClipboard(bool primary = false) { };
   virtual bool CopyToClipboard() { return false; }
   virtual bool CutToClipboard() { return false; }
-  virtual void SelectAll() = 0;
+  virtual void SelectAll() { };
   virtual bool CanCopy() { return false; }
-  virtual void SetMatchParens(bool match)=0;
+  virtual void SetMatchParens(bool match) { };
   virtual wxPoint PositionToPoint(CellParser& parser, int pos = -1) { return wxPoint(-1, -1); }
   virtual bool IsDirty() { return false; }
-  virtual void SwitchCaretDisplay()=0;
-  virtual void SetFocus(bool focus)=0;
+  virtual void SwitchCaretDisplay() { };
+  virtual void SetFocus(bool focus) { };
   void SetForeground(CellParser& parser);
   virtual bool IsActive() { return false; }
   virtual void SetParent(Cell *parent);

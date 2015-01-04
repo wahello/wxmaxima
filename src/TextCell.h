@@ -20,24 +20,23 @@
 #ifndef TEXTCELL_H
 #define TEXTCELL_H
 
-#include "MathCell.h"
+#include "Cell.h"
 
-class TextCell : public MathCell
+class TextCell : public Cell
 {
 public:
   TextCell();
   TextCell(wxString text);
   ~TextCell();
-  MathCell* Copy(bool all);
-  void Destroy();
+  Cell* Copy();
   void SetValue(wxString text);
-  void RecalculateSize(CellParser& parser, int fontsize, bool all);
-  void RecalculateWidths(CellParser& parser, int fontsize, bool all);
-  void Draw(CellParser& parser, wxPoint point, int fontsize, bool all);
+  void RecalculateSize(CellParser& parser, int fontsize);
+  void RecalculateWidths(CellParser& parser, int fontsize);
+  void Draw(CellParser& parser, wxPoint point, int fontsize);
   void SetFont(CellParser& parser, int fontsize);
-  wxString ToString(bool all);
-  wxString ToTeX(bool all);
-	wxString ToXML(bool all);	// new!
+  wxString ToString();
+  wxString ToTeX();
+	wxString ToXML();
   wxString GetDiffPart();
   bool IsOperator();
   wxString GetValue() { return m_text; }

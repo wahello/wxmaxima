@@ -278,3 +278,10 @@ bool Cell::IsMath()
            m_textStyle == TS_LABEL ||
            m_textStyle == TS_INPUT);
 }
+
+
+void Cell::SelectInner(wxRect& rect, MathCell** first, MathCell** last)
+{
+  *first = this;
+  *last = this;
+}
