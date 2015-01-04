@@ -193,18 +193,6 @@ void Cell::ResetData()
   m_breakLine = m_forceBreakLine;
 }
 
-/*!
- * Unbreaks broken cells
- */
-void Cell::Unbreak()
-{
-  ResetData();
-  m_isBroken = false;
-  m_nextToDraw = m_next;
-  if (m_nextToDraw != NULL)
-    m_nextToDraw->m_previousToDraw = this;
-}
-
 void Cell::SetParent(Cell *parent)
 {
   m_group = parent;

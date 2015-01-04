@@ -9,11 +9,20 @@ public:
   CellList();
   ~CellList();
   virtual void SetParent(Cell *parent);
+  //! Unbreak all cells in the list.
   virtual void Unbreak();
+  //! Unbreak the current cell.
+  virtual void Unbreak(Cell *cell);
   virtual void ResetData();
   virtual void Draw(CellParser& parser, wxPoint point, int fontsize);
   virtual void RecalculateSize(CellParser& parser, int fontsize);
   virtual void RecalculateWidths(CellParser& parser, int fontsize);
+  /*! Returns an iterator that points to the list element cell
+
+    If the element isn't found in the list this is deemed to be a bug in the
+    program and therefore is caught by an assert macro.
+   */
+  CellList::iterator ListElement(Cell *cell);
 
   //! Get the distance between the top and the center of the line.
   int GetMaxCenter(Cell *LineStart);

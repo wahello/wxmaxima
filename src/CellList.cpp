@@ -5,7 +5,6 @@ CellList::CellList()
   m_lineWidth = -1;
 }
 
-
 void CellList::AppendCell(Cell *p_next)
 {
   // If there is nothing to append we return immediately.
@@ -161,6 +160,17 @@ int CellList::GetLineWidth(double scale)
   return m_lineWidth;
 }
 
+CellList::iterator CellList::ListElement(Cell *cell)
+{
+  iterator retval;
+  while((*retval!=cell)&&(retval!=end()))
+    retval++;
+  wxASSERT_MSG(
+	       *retval==cell,
+	       "Cell wasn't part of the list it was supposed to be in."
+	       );
+  return(retval);
+}
 
 bool CellList::IsEditable(Cell *SelectionStart)
 {
@@ -172,14 +182,7 @@ bool CellList::IsEditable(Cell *SelectionStart)
   if(SelectionStart==front()) return false;
 
   // Search the list of cells for the current cell.
-  iterator CellInFrontOfSelection;
-  while((*CellInFrontOfSelection!=SelectionStart)&&(CellInFrontOfSelection!=end()))
-    CellInFrontOfSelection++;
-  wxASSERT_MSG(
-	       *CellInFrontOfSelection==SelectionStart,
-	       "CellList::IsEditable was applied to a cell of the wrong list"
-	       );
-  // Now we need the cell prior to this one.
+  iterator CellInFrontOfSelection=ListElement(SelectionStart);
   CellInFrontOfSelection--;
     
   if (
@@ -195,12 +198,6 @@ void CellList::SetParent(Cell *parent)
 { 
   for(iterator i=begin();i!=end();i++)
     (*i)->SetParent(parent);
-}
-
-void CellList::Unbreak()
-{ 
-  for(iterator i=begin();i!=end();i++)
-    (*i)->Unbreak();
 }
 
 void CellList::RecalculateSize(CellParser& parser, int fontsize)
@@ -328,7 +325,6 @@ void CellList::Clear()
 	delete *i;
 	*i=NULL;
       }
-  
 }
 
 CellList::~CellList()
@@ -349,6 +345,27 @@ Cell *CellList::SelectFirst(wxRect& rect)
     return(*i);
   else
     return(NULL);
+}
+
+void CellList::Unbreak(Cell *cell)
+{
+
+  iterator currentelement=ListElement(cell);
+  
+  cell->ResetData();
+  cell->m_isBroken = false;
+  if(currentelement==end())
+    cell->m_nextToDraw = NULL;
+  else
+    cell->m_nextToDraw = *(++currentelement);
+  if (cell->m_nextToDraw != NULL)
+    cell->m_nextToDraw->m_previousToDraw = cell;
+}
+
+void CellList::Unbreak()
+{ 
+  for(iterator i=begin();i!=end();i++)
+    (*i)->Unbreak();
 }
 
 Cell *CellList::SelectLast(wxRect& rect)
