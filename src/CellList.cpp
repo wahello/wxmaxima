@@ -13,7 +13,7 @@ void CellList::AppendCell(Cell *p_next)
   // be recalculated.
   ResetData();
 
-  Cell *tmp=end();
+  Cell *tmp=back();
   
   if(!empty())
     (*end())->m_nextToDraw=p_next;
@@ -43,16 +43,19 @@ int CellList::GetMaxCenter(Cell *LineStart)
   // -1 means we need to recalculate this value.
   if (LineStart->m_maxCenter == -1)
   {
-    //    for (std::list<int>::reverse_iterator i = s.rbegin(); i != s.rend(); ++i)
       
     Cell *tmp=front();
     int max_Center=0;
     
     // Find the last element in the order they will be drawn so we can iterate
     // backwards from there.
-    while(tmp->m_NextToDraw)tmp=tmp->m_NextToDraw;
+    while(tmp->m_nextToDraw)tmp=tmp->m_nextToDraw;
 
     // Now we iterate backwards through the list
+    // Normally this should look like the following:
+    //    for (std::list<int>::reverse_iterator i = s.rbegin(); i != s.rend(); ++i)
+    // But this time we have to iterate by hand: It might happen that we draw
+    // things in a different order than specified by in the list.
     while (tmp!=NULL)
       {
 	// Determine if we got a new maximum center value
@@ -67,6 +70,14 @@ int CellList::GetMaxCenter(Cell *LineStart)
 	if(tmp->m_isBroken)
 	  max_Center=0;
 
+	// If I didn't get something wrong the old code was able to add
+	// inconsistencies here. So we better check...
+	if(tmp->m_previousToDraw)
+	  wxASSERT_MSG(
+		       tmp==(tmp->m_previousToDraw)->m_nextToDraw,
+		       "m_previousToDraw and m_nextToDraw are inconsistent"
+		       );
+
 	// Go to the element that is drawn prior to this one.
 	tmp=tmp->m_previousToDraw;
       }
@@ -74,31 +85,58 @@ int CellList::GetMaxCenter(Cell *LineStart)
   return LineStart->m_maxCenter;
 }
 
-int CellList::GetMaxDrop()
+int CellList::GetMaxDrop(Cell *LineStart)
 {
   // -1 means we need to recalculate this value.
-  if (m_maxCenter == -1)
+  if (LineStart->m_maxDrop == -1)
   {
+      
     Cell *tmp=front();
+    int max_Drop=0;
+    
+    // Find the last element in the order they will be drawn so we can iterate
+    // backwards from there.
+    while(tmp->m_nextToDraw)tmp=tmp->m_nextToDraw;
 
-    do
+    // Now we iterate backwards through the list
+    // Normally this should look like the following:
+    //    for (std::list<int>::reverse_iterator i = s.rbegin(); i != s.rend(); ++i)
+    // But this time we have to iterate by hand: It might happen that we draw
+    // things in a different order than specified by in the list.
+    while (tmp!=NULL)
       {
-	if(m_maxDrop>tmp->GetDrop())
-	  m_maxDrop= tmp->GetDrop();
+	// Determine if we got a new maximum center value
+	if(max_Drop>tmp->GetDrop())
+	  max_Drop=tmp->GetDrop();
+
+	// Save the value in the cell
+	tmp->m_maxDrop=max_Drop;
+
+	// If this cell begins with a linebreak the maximum center value calculation
+	// restarts with 0 for the previous cell
+	if(tmp->m_isBroken)
+	  max_Drop=0;
+
+	// If I didn't get something wrong the old code was able to add
+	// inconsistencies here. So we better check...	
+	if(tmp->m_previousToDraw)
+	  wxASSERT_MSG(
+		       tmp==(tmp->m_previousToDraw)->m_nextToDraw,
+		       "m_previousToDraw and m_nextToDraw are inconsistent"
+		       );
 	
-	tmp=tmp->m_nextToDraw;
-      } while ((tmp!=NULL)&&(!tmp->m_isBroken))
+	// Go to the element that is drawn prior to this one.
+	tmp=tmp->m_previousToDraw;
+      }
   }
-  return m_maxCenter;
+  return LineStart->m_maxDrop;
 }
 
-int CellList::GetMaxHeight()
+int CellList::GetMaxHeight(Cell *LineStart)
 {
-  return GetMaxCenter() + GetMaxDrop();
+  return GetMaxCenter(LineStart) + GetMaxDrop(LineStart);
 }
 
-/*! Get the width of this line.
- */
 int CellList::GetLineWidth(double scale)
 {
   if (m_lineWidth == -1)
@@ -131,7 +169,15 @@ bool CellList::IsEditable(Cell *SelectionStart)
 
   if(SelectionStart==front()) return false;
 
-  iterator CellInFrontOfSelection=SelectionStart;
+  // Search the list of cells for the current cell.
+  iterator CellInFrontOfSelection;
+  while((*CellInFrontOfSelection!=SelectionStart)&&(CellInFrontOfSelection!=end()))
+    CellInFrontOfSelection++;
+  wxASSERT_MSG(
+	       *CellInFrontOfSelection==SelectionStart,
+	       "CellList::IsEditable was applied to a cell of the wrong list"
+	       );
+  // Now we need the cell prior to this one.
   CellInFrontOfSelection--;
     
   if (

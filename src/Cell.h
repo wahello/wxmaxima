@@ -275,6 +275,18 @@ public:
   void SetStyle(int style) { m_textStyle = style; }
   bool IsMath();
   void SetAltCopyText(wxString text) { m_altCopyText = text; }
+  /*! Caches the maximum difference between the center and the top of this line
+
+    Can be queried by GetMaxCenter(); The value -1 means that this information 
+    still needs to be calculated.
+   */
+  int m_maxCenter;
+  /*! Caches the maximum difference between the center and the bottom of this line
+
+    Can be queried by GetMaxDrop(); The value -1 means that this information 
+    still needs to be calculated.
+   */
+  int m_maxDrop;
 protected:
   /*! Attach a copy of the list of cells that follows this one to a cell
   */
@@ -285,18 +297,11 @@ protected:
   //! The width of this cell
   int m_width;
   int m_center;
-  /*! Caches the maximum difference between the center and the top of this line
-
-    Can be queried by GetMaxCenter(); The value -1 means that this information 
-    still needs to be calculated.
-   */
-  int m_maxCenter;
-  int m_maxDrop;
   int m_type;
   int m_textStyle;
   //! Does this cell begin with a forced page break?
   bool m_breakPage;
-  //! Are we allowed to add a linee break before this cell?
+  //! Are we allowed to add a line break before this cell?
   bool m_breakLine;
   //! true means we forcce this cell to begin with a line break.  
   bool m_forceBreakLine;

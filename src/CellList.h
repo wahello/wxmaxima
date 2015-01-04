@@ -16,11 +16,11 @@ public:
   virtual void RecalculateWidths(CellParser& parser, int fontsize);
 
   //! Get the distance between the top and the center of the line.
-  int GetMaxCenter();
+  int GetMaxCenter(Cell *LineStart);
   //! Get the distance between the bottom and the center of the line.
-  int GetMaxDrop();
+  int GetMaxDrop(Cell *LineStart);
   //!  Get the maximum hight of cells in line.
-  int GetMaxHeight();
+  int GetMaxHeight(Cell *LineStart);
 
   /*! Get the width this list of cells would have if there weren't any linebreaks.
     
@@ -28,9 +28,8 @@ public:
   */
   int GetFullWidth(double scale);
   
-  /*! Get the width of this list of cells including linebreaks.
+  /*! Get the width of the bounding box occupied by this list of cells.
    */
-  
   int GetLineWidth(double scale);
   
   virtual wxString ToString();
@@ -71,6 +70,12 @@ public:
 
   
  private:
+  /*! Caches the width of the bounding box occupied by this list of cells.
+
+    - Will contain -1, if it has not yet been calculated.
+    - Won't be recalculated on appending new cells to the list.
+  */  
+  int m_lineWidth;
 
   /*! Caches the width of the list starting with this cell.
 
@@ -78,11 +83,4 @@ public:
     - Won't be recalculated on appending new cells to the list.
   */
   int m_fullWidth;
-  /*! Caches the width of the rest of the line this cell is part of.
-
-    - Will contain -1, if it has not yet been calculated.
-    - Won't be recalculated on appending new cells to the list.
-  */  
-  int m_lineWidth;
-
 };
