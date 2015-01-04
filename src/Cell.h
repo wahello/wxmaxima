@@ -142,10 +142,6 @@ public:
      - false: Remove the forced linebreak
    */
   void ForceBreakLine(bool force) { m_forceBreakLine = m_breakLine = force; }
-
-  //! Invalidate the cached size information.
-  virtual void InvalidateSizeInformation();
-
   
   //! Get the total height of this cell
   int GetHeight() { return m_height; }
@@ -216,7 +212,7 @@ public:
     \attention This method has to be overridden by children of the 
     Cell class.
   */
-  virtual void SelectInner(wxRect& rect, Cell** first, Cell** last);
+  virtual void SelectInner(wxRect& rect, Cell** first, Cell** last)=0;
 
   virtual bool IsOperator();
   virtual bool IsShortNum() { return false; }

@@ -68,7 +68,18 @@ public:
   //! Do we have any operators in this cell list?
   bool IsCompound();
 
-  
+/*! Find the first cell in rectangle rect in this line.
+
+  \return the first cell that intersects the given rectangle or NULL if there isn't such a cell.
+ */
+  Cell *SelectFirst(wxRect& rect);
+
+  /*! Find the last cell in rectangle rect in this line.
+
+  \return the last cell that intersects the given rectangle or NULL if there isn't such a cell.
+ */
+  Cell *SelectLast(wxRect& rect);
+
  private:
   /*! Caches the width of the bounding box occupied by this list of cells.
 

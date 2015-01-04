@@ -1,6 +1,8 @@
 #include "CellList.h"
 CellList::CellList()
 {
+  m_fullWidth = -1;
+  m_lineWidth = -1;
 }
 
 
@@ -209,8 +211,11 @@ void CellList::RecalculateSize(CellParser& parser, int fontsize)
 
 void CellList::ResetData()
 { 
+  m_fullWidth = -1;
+  m_lineWidth = -1;
   for(iterator i=begin();i!=end();i++)
     (*i)->ResetData();
+
 }
 
 void CellList::RecalculateWidths(CellParser& parser, int fontsize)
@@ -330,4 +335,32 @@ CellList::~CellList()
 {
   // Free all memory occupied by the cells the list manages pointers to. 
   Clear();
+}
+
+Cell *CellList::SelectFirst(wxRect& rect)
+{
+
+  iterator i=begin();
+
+  while((!rect.Intersects((*i)->GetRect()))&&(i!=end()))
+	i++;
+
+  if(rect.Intersects((*i)->GetRect()))
+    return(*i);
+  else
+    return(NULL);
+}
+
+Cell *CellList::SelectLast(wxRect& rect)
+{
+
+  iterator i=end();
+
+  while((!rect.Intersects((*i)->GetRect()))&&(i!=begin()))
+	i--;
+
+  if(rect.Intersects((*i)->GetRect()))
+    return(*i);
+  else
+    return(NULL);
 }

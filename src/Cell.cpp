@@ -24,8 +24,6 @@ Cell::Cell()
   m_nextToDraw = NULL;
   m_previousToDraw = NULL;
   m_group = NULL;
-  m_fullWidth = -1;
-  m_lineWidth = -1;
   m_maxCenter = -1;
   m_maxDrop = -1;
   m_width = -1;
@@ -92,11 +90,6 @@ void Cell::SetType(int type)
 Cell* Cell::GetParent()
 {
   return m_group;
-}
-
-void Cell::InvalidateSizeInformation()
-{
-  m_maxDrop=m_maxHeight=m_lineWidth=m_FullWidth=-1;
 }
 
 void Cell::RecalculateWidths(CellParser& parser, int fontsize)
@@ -167,39 +160,6 @@ void Cell::SelectRect(wxRect& rect, Cell** first, Cell** last)
     *last = NULL;
 }
 
-/***
- * Find the first cell in rectangle rect in this line.
- */
-void Cell::SelectFirst(wxRect& rect, Cell** first)
-{
-  if (rect.Intersects(GetRect(false)))
-    *first = this;
-  else if (m_nextToDraw != NULL)
-    m_nextToDraw->SelectFirst(rect, first);
-  else
-    *first = NULL;
-}
-
-/***
- * Find the last cell in rectangle rect in this line.
- */
-void Cell::SelectLast(wxRect& rect, Cell** last)
-{
-  if (rect.Intersects(GetRect(false)))
-    *last = this;
-  if (m_nextToDraw != NULL)
-    m_nextToDraw->SelectLast(rect, last);
-}
-
-/***
- * Select rectangle in deeper cell - derived classes should override this
- */
-void Cell::SelectInner(wxRect& rect, Cell** first, Cell** last)
-{
-  *first = this;
-  *last = this;
-}
-
 bool Cell::BreakLineHere()
 {
   return (!m_isBroken && (m_breakLine || m_forceBreakLine));
@@ -226,8 +186,6 @@ bool Cell::ContainsRect(wxRect& sm)
  */
 void Cell::ResetData()
 {
-  m_fullWidth = -1;
-  m_lineWidth = -1;
   m_maxCenter = -1;
   m_maxDrop = -1;
 //  m_currentPoint.x = -1;
